@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script>
+
+    </script>
+</head>
+<body>
+
+
+<div style="display: inline-block;width: 50%;height: 500px;">
+    <span>Channel:</span> <span id="atChannel"></span>&nbsp; <span>Views:</span><span id="views"></span>
+
+    <div>Program:<span id="atProgram"></span></div>
+
+    <div>Like:<span id="totalLike"></span></div>
+
+    <div>Follow:<span id="totalFollow"></span></div>
+
+    <div class="listMessage" style="  ">
+
+        <ul id="listMessage" style="border: 1px solid lightgray ;height: 500px;overflow-y:scroll">
+
+        </ul>
+    </div>
+</div>
+<div style="display: inline-block;width: 30%;height: 500px;">
+    <span>Population:</span><span id="population">0</span>
+
+    <div class="listMember" style=" ">
+
+        <ul id="listMember" style="border: 1px solid lightgray ;height: 500px;overflow-y:scroll ">
+
+        </ul>
+    </div>
+</div>
+
+
+<br>
+
+<div>
+    <span>Message:</span>
+    <input id="txtMessage" type="text" placeholder="write message"/>
+    <button onclick="sendMessage()">Send</button>
+</div>
+<br>
+
+
+<span>Channel:</span>
+<input id="channel" type="text" value="56f3d22f58f151bb17862b85"/>
+<span>Program:</span>
+<input id="program" type="text" value=""/>
+<span>MemberID:</span>
+<input id="member_id" type="text" value="570b8179c10d21ae091b8e76"/>
+<span>AccessToken</span>
+<input id="access_token" type="text" value="3z8iuO1rEhZVz6e8VojxiGm4iEkBoeDpaKrJdy5y5qIzUcI5m2fZWBmgDgj90Djr"/>
+
+<button id="join" onclick="joinChannel()">Join</button>
+<button id="leave" onclick="leaveChannel()">Leave</button>
+
+<button id="like" onclick="Like()">Like</button>
+<button id="unlike" onclick="Unlike()">Unlike</button>
+
+<button id="follow" onclick="Follow()">Follow</button>
+<button id="unfollow" onclick="UnFollow()">Unfollow</button>
+<div>
+    <ul>
+        <li>
+            <span>channel_id</span>
+            56f3d22f58f151bb17862b85
+            <span>memmber_id</span>
+            57a442ce0c7c0bd505d83e18
+            <span>access_token</span>
+            3z8iuO1rEhZVz6e8VojxiGm4iEkBoeDpaKrJdy5y5qIzUcI5m2fZWBmgDgj90Djr
+        </li>
+        <!--<li>-->
+        <!--<span>channel_id</span>-->
+        <!--56f3d22f58f151bb17862b85-->
+        <!--<span>memmber_id</span>-->
+        <!--5718381b853a9c606297dca9-->
+        <!--<span>access_token</span>-->
+        <!--fWj8FEPOAC3afP7aWr5k6uJqsWc7mmKPvyinc6tOe4kkfDwieOwLd44Pp3G74TnE-->
+        <!--</li>-->
+    </ul>
+
+</div>
+
+<script>
+    var socket = io.connect('http://192.168.1.139:5555', {'sync disconnect on unload': true});
+
+    var channel = $('#channel').val();
+    var population = 0;
+    socket.on('joined', function (data) {
+        population = 0;
+        console.log(data);
+
+        if (data.history) {
+            $('#listMessage').empty();
+            $.each(data.history, function (index, history) {
+
+                $('#listMessage').append('<li  id="member_' + data.id + '"><img width="100" height="100" src="' + data.user.profile_pic + '" /> :' + data.message + '</li>');
+            });
+        }
+        var member = $('#member_id').val();
+
+        if (data.id !== member) {
+            console.log(data);
+            $('#listMember').append('<li  id="member_' + data.id + '"><img width="50" height="50" src="' + data.profile_pic + '" /> :' + data.displayName + ' ' + data.socket_id + '</li>')
+
+        }
+        channel = $('#channel').val();
+
+        $('#atChannel').html(channel);
+
+    });
+
+    socket.on('joined_57a442ce0c7c0bd505d83e18', function (data) {
+
+        console.log(data);
+
+        $('#listMember').empty();
+
+        $.each(data.member, function (index, value) {
+
+            $('#listMember').append('<li  id="member_' + value.id + '"><img width="50" height="50" src="' + value.profile_pic + '" /> :' + value.displayName + ' ' + value.socket_id + '</li>');
+
+            population++;
+        });
+        $('#population').html(population);
+    });
+
+    socket.on('joined_5719a97a9a1825a50b0b19f3', function (data) {
+
+//        console.log(data);
+
+        $('#listMember').empty();
+
+        $.each(data.member, function (index, value) {
+
+            $('#listMember').append('<li id="member_' + value.id + '"><img width="50" height="50" src="' + value.profile_pic + '" /> :' + value.displayName + value.socket_id + '</li>');
+
+            population++;
+        });
+        $('#population').html(population);
+    });
+
+    socket.on('views', function (data) {
+
+        $('#views').html(data.views);
+
+    });
+
+
+    socket.on('leaved', function (data) {
+        console.log(data);
+//        $('#listMember').empty();
+        $('#member_' + data.id).remove();
+//        $('#listMember').append('<li><img width="50" height="50" src="' + user.profile_pic + '" /> :' + user.displayName + '</li>');
+
+        population--;
+
+//
+//        $('#population').html(population);
+//        $('#atChannel').html(data.channel);
+
+
+    });
+
+    function joinChannel() {
+        var channel = $('#channel').val();
+        var member_id = $('#member_id').val().trim();
+        var access_token = $('#access_token').val().trim();
+
+        if (channel == '') {
+            $('#channel').focus();
+            return;
+        }
+
+        if (!socket.connected) {
+            socket.connect();
+        }
+
+
+        socket.emit('join', {channel: channel, memberId: member_id, accessToken: access_token}, function (data) {
+
+
+            $.each(data, function (index, value) {
+
+                if (value.channelId === channel) {
+                    $('#atProgram').html(JSON.stringify(value));
+                }
+
+            });
+
+            console.log(data);
+            $('#totalLike').html(data.like);
+        });
+
+
+    }
+
+
+    function leaveChannel() {
+
+        var population = $('#population').html();
+        var channel = $('#channel').val();
+        $('#listMember').empty();
+        $('#population').html('');
+        $('#atChannel').html('');
+        $('#atProgram').html('');
+        socket.emit('leave');
+    }
+
+
+    function sendMessage() {
+        var i = "";
+        var message = $('#txtMessage').val();
+//            var i = Math.random() * 50;
+
+        socket.emit('send.message', {message: message});
+
+//            setTimeout(sendMessage, Math.random() * 50);
+//            console.log(txt);
+
+    }
+
+    function Like() {
+
+        var program = $('#program').val();
+        socket.emit('like', program);
+
+
+    }
+    function Unlike() {
+
+        var program = $('#program').val();
+        socket.emit('unlike', program);
+
+
+    }
+
+    function Follow() {
+        var program = $('#program').val();
+        socket.emit('follow', program);
+
+    }
+
+    function UnFollow() {
+        var program = $('#program').val();
+        socket.emit('unfollow', program);
+
+    }
+
+    var height = 0;
+    socket.on('receive.message', function (data) {
+
+        console.log(data);
+
+
+        $('#listMessage').append('<li tabindex="1"><img width="100" height="100" src="' + data.profile_pic + '" /> :' + data.message + '</li>');
+
+        $('#listMessage li').last().addClass('active-li').focus();
+        $('#listMessage li').removeAttr('tabindex');
+        $('#listMessage li').removeClass('active-li');
+    });
+
+    socket.on('update.program', function (data) {
+        console.log(data);
+        $('#atProgram').html(JSON.stringify(data));
+    });
+
+    socket.on('update.channel', function (data) {
+        console.log('update.channel');
+        console.log(data);
+    });
+
+    socket.on('update.like', function (data) {
+        console.log(data);
+        $('#totalLike').html(data.like);
+    });
+
+
+    socket.on('update.follow', function (data) {
+        console.log(data);
+        $('#totalFollow').html(data.follow);
+    });
+
+
+</script>
+</body>
+</html>

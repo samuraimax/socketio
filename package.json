@@ -1,0 +1,28 @@
+{
+  "name": "socketchat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "socket"
+  ],
+  "author": "Samuraimax",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.6.8",
+    "express": "^4.15.3",
+    "http": "0.0.0",
+    "ioredis": "^3.1.1",
+    "kue": "^0.11.6",
+    "mongoose": "^4.10.5",
+    "morgan": "^1.8.2",
+    "path": "^0.12.7",
+    "request": "^2.81.0",
+    "socket.io": "^2.0.2"
+  }
+}
