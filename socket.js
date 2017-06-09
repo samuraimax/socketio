@@ -38,6 +38,7 @@ module.exports = function (server, localhost) {
 
 
                     var member = JSON.parse(body);
+                    console.log(member);
 
                     return callback(null, member);
                 }else{
@@ -54,10 +55,16 @@ module.exports = function (server, localhost) {
 
     var getMember = function (memberId, accessToken, callback) {
         // Get member Detail
-        request.get(BASE_URL + '/api/Members/' + memberId + '?access_token=' + accessToken,
+        request.get({url:BASE_URL + '/user/' + memberId,
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }},
             function (error, response, body) {
                 if (response && response.statusCode == 200) {
                     var member = JSON.parse(body);
+
+                    member.profile_pic = BASE_URL+member.avatar;
+                    console.log(member);
 
                     return callback(null, member);
                 } else {
@@ -77,11 +84,11 @@ module.exports = function (server, localhost) {
 
         socket.on('join', function (data, cb) {
 
-            socket.channel = data.videoId;
+            socket.video = data.video;
             socket.memberId = data.memberId;
             socket.accessToken = data.accessToken;
 
-            socket.join(socket.channel);
+            socket.join(socket.video);
 
 
             getMember(socket.memberId, socket.accessToken, function (err, result) {
@@ -123,15 +130,15 @@ module.exports = function (server, localhost) {
                 });
 
 
-                clientRedis.sadd('channel:viewer:' + socket.channel, JSON.stringify(socket.member), function (err, result) {
+                clientRedis.sadd('video:viewer:' + socket.video, JSON.stringify(socket.member), function (err, result) {
                     if (err) {
                         console.log(err);
                         return false;
                     }
-                    clientRedis.smembers('channel:viewer:' + socket.channel, function (err, result) {
+                    clientRedis.smembers('video:viewer:' + socket.video, function (err, result) {
 
-                        clientRedis.llen('channel:message:' + socket.channel, function (err, length) {
-                            clientRedis.lrange('channel:message:' + socket.channel, length - 20, length, function (err, message) {
+                        clientRedis.llen('video:message:' + socket.video, function (err, length) {
+                            clientRedis.lrange('video:message:' + socket.video, length - 20, length, function (err, message) {
                                 if (err) {
                                     console.log(err);
                                     return false;
@@ -171,14 +178,14 @@ module.exports = function (server, localhost) {
                                 };
 
 
-                                io.to(socket.channel).emit('joined', new_member);
-                                io.to(socket.channel).emit('joined_' + socket.memberId, {
+                                io.to(socket.video).emit('joined', new_member);
+                                io.to(socket.video).emit('joined_' + socket.memberId, {
                                     member: member,
                                     history: history
                                 });
                                 var all_program = [];
 
-                                clientRedis.smembers('channel:update', function (err, update_program) {
+                                clientRedis.smembers('video:update', function (err, update_program) {
 
                                     update_program.forEach(function (value) {
                                         temp_data = JSON.parse(value);
@@ -192,10 +199,10 @@ module.exports = function (server, localhost) {
                                             id: temp_data.id,
                                             landscape: temp_data.landscape,
                                             portrait: temp_data.portrait,
-                                            channelId: temp_data.channelId,
-                                            channelName: temp_data.channelName,
-                                            channelNameEng: temp_data.channelNameEng,
-                                            channelNameTh: temp_data.channelNameTh
+                                            videoId: temp_data.videoId,
+                                            videoName: temp_data.videoName,
+                                            videoNameEng: temp_data.videoNameEng,
+                                            videoNameTh: temp_data.videoNameTh
                                         });
 
                                     });
@@ -213,14 +220,14 @@ module.exports = function (server, localhost) {
                 });
 
 
-                clientRedis.get('channel:view:' + socket.channel + ':' + socket.memberId, function (err, exits) {
+                clientRedis.get('video:view:' + socket.video + ':' + socket.memberId, function (err, exits) {
 
                     if (!exits) {
-                        clientRedis.setex('channel:view:' + socket.channel + ':' + socket.memberId, 3600, JSON.stringify(socket.member));
-                        clientRedis.incr('channel:' + socket.channel + ':views');
+                        clientRedis.setex('video:view:' + socket.video + ':' + socket.memberId, 3600, JSON.stringify(socket.member));
+                        clientRedis.incr('video:' + socket.video + ':views');
                     }
-                    clientRedis.get('channel:' + socket.channel + ':views', function (err, views) {
-                        io.to(socket.channel).emit('views', {views: views});
+                    clientRedis.get('video:' + socket.video + ':views', function (err, views) {
+                        io.to(socket.video).emit('views', {views: views});
                     });
 
                 });
@@ -233,8 +240,8 @@ module.exports = function (server, localhost) {
 
 
         socket.on('history', function (data) {
-            clientRedis.llen('channel:message:' + data.channel, function (err, length) {
-                clientRedis.lrange('channel:message:' + data.channel, length - 20, length, function (err, message) {
+            clientRedis.llen('video:message:' + data.video, function (err, length) {
+                clientRedis.lrange('video:message:' + data.video, length - 20, length, function (err, message) {
                     //console.log(message);
 
                 });
@@ -246,7 +253,7 @@ module.exports = function (server, localhost) {
         socket.on('leave', function () {
 
 
-            socket.disconnect(socket.channel);
+            socket.disconnect(socket.video);
 
         });
 
@@ -259,9 +266,9 @@ module.exports = function (server, localhost) {
                     profile_pic: socket.member.profile_pic
                 };
 
-                io.to(socket.channel).emit('leaved', leaved_member);
+                io.to(socket.video).emit('leaved', leaved_member);
 
-                clientRedis.srem('channel:viewer:' + socket.channel, JSON.stringify(socket.member), function (err, result) {
+                clientRedis.srem('video:viewer:' + socket.video, JSON.stringify(socket.member), function (err, result) {
 
                 });
 
@@ -280,7 +287,7 @@ module.exports = function (server, localhost) {
                 profile_pic: socket.member.profile_pic
             };
 
-            create(data.message, socket.channel, new_member);
+            create(data.message, socket.video, new_member);
 
         });
 
@@ -307,7 +314,7 @@ module.exports = function (server, localhost) {
 
             } else {
                 userAdminToken = result.token;
-                jobs.create('channel', {
+                jobs.create('video', {
                     accessToken: userAdminToken
                 }).delay(1000).priority('high')
                     .removeOnComplete(true)
@@ -320,19 +327,19 @@ module.exports = function (server, localhost) {
         done();
     });
 
-    function create(message, channel, member) {
+    function create(message, video, member) {
 
         var job = jobs.create('message', {
             title: message,
             message: message,
-            channel: channel,
+            video: video,
             member: member
         }).priority('high')
             .removeOnComplete(true).save();
         job.on('complete', function () {
             var d = new Date();
             var created_at = Math.floor(d.getTime() / 1000);
-            clientRedis.rpush('channel:message:' + channel, JSON.stringify({
+            clientRedis.rpush('video:message:' + video, JSON.stringify({
                 user: member,
                 message: message,
                 created_at: created_at
@@ -349,11 +356,11 @@ module.exports = function (server, localhost) {
 
     jobs.process('message', 1, function (job, done) {
         var message = job.data.message;
-        var channel = job.data.channel;
+        var video = job.data.video;
         var member = job.data.member;
         var d = new Date();
         var created_at = Math.floor(d.getTime() / 1000);
-        io.to(channel).emit('receive.message', {
+        io.to(video).emit('receive.message', {
             user_id: member.id,
             displayName: member.displayName,
             profile_pic: member.profile_pic,
@@ -387,9 +394,9 @@ module.exports = function (server, localhost) {
                 console.log(like_data.error);
             } else {
 
-                clientRedis.incr('channel:' + job.data.channelId + ':' + job.data.programId + ':like', function (err, total) {
+                clientRedis.incr('video:' + job.data.videoId + ':' + job.data.programId + ':like', function (err, total) {
                     //console.log(total);
-                    io.to(job.data.channelId).emit('update.like', {like: total, memberId: job.data.memberId});
+                    io.to(job.data.videoId).emit('update.like', {like: total, memberId: job.data.memberId});
                 });
             }
 
@@ -408,8 +415,8 @@ module.exports = function (server, localhost) {
             }
             if (result.status == 'success') {
 
-                clientRedis.decr('channel:' + job.data.channelId + ':' + job.data.programId + ':like', function (err, total) {
-                    io.to(job.data.channelId).emit('update.like', {like: total, memberId: job.data.memberId});
+                clientRedis.decr('video:' + job.data.videoId + ':' + job.data.programId + ':like', function (err, total) {
+                    io.to(job.data.videoId).emit('update.like', {like: total, memberId: job.data.memberId});
                 });
 
             }
@@ -441,9 +448,9 @@ module.exports = function (server, localhost) {
                 console.log(follow_data.error);
             } else {
 
-                clientRedis.incr('channel:' + job.data.channelId + ':' + job.data.programId + ':follow', function (err, total) {
+                clientRedis.incr('video:' + job.data.videoId + ':' + job.data.programId + ':follow', function (err, total) {
                     //console.log(total);
-                    io.to(job.data.channelId).emit('update.follow', {follow: total, memberId: job.data.memberId});
+                    io.to(job.data.videoId).emit('update.follow', {follow: total, memberId: job.data.memberId});
                 });
             }
 
@@ -473,9 +480,9 @@ module.exports = function (server, localhost) {
                 console.log(follow_data.error);
             } else {
 
-                clientRedis.decr('channel:' + job.data.channelId + ':' + job.data.programId + ':follow', function (err, total) {
+                clientRedis.decr('video:' + job.data.videoId + ':' + job.data.programId + ':follow', function (err, total) {
                     //console.log(total);
-                    io.to(job.data.channelId).emit('update.follow', {follow: total, memberId: job.data.memberId});
+                    io.to(job.data.videoId).emit('update.follow', {follow: total, memberId: job.data.memberId});
                 });
             }
 
@@ -490,12 +497,12 @@ module.exports = function (server, localhost) {
     router.get('/population', function (req, res) {
         var population = 0;
 
-        if (numClients[req.query.channel] !== undefined) {
-            population = numClients[req.query.channel];
+        if (numClients[req.query.video] !== undefined) {
+            population = numClients[req.query.video];
 
         }
-        io.to(req.query.channel).emit('population', population);
-        res.json({success: true, msg: 'channel ' + req.query.channel, total: population});
+        io.to(req.query.video).emit('population', population);
+        res.json({success: true, msg: 'video ' + req.query.video, total: population});
     });
 
     return router;

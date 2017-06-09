@@ -16,7 +16,7 @@
 
 
 <div style="display: inline-block;width: 50%;height: 500px;">
-    <span>Channel:</span> <span id="atChannel"></span>&nbsp; <span>Views:</span><span id="views"></span>
+    <span>video:</span> <span id="atvideo"></span>&nbsp; <span>Views:</span><span id="views"></span>
 
     <div>Program:<span id="atProgram"></span></div>
 
@@ -53,17 +53,17 @@
 <br>
 
 
-<span>Channel:</span>
-<input id="channel" type="text" value="56f3d22f58f151bb17862b85"/>
+<span>video:</span>
+<input id="video_id" type="text" value="59350451ca892d24dcbaa2ac"/>
 <span>Program:</span>
 <input id="program" type="text" value=""/>
 <span>MemberID:</span>
-<input id="member_id" type="text" value="570b8179c10d21ae091b8e76"/>
+<input id="member_id" type="text" value="5935041dca892d24dcbaa2aa"/>
 <span>AccessToken</span>
-<input id="access_token" type="text" value="3z8iuO1rEhZVz6e8VojxiGm4iEkBoeDpaKrJdy5y5qIzUcI5m2fZWBmgDgj90Djr"/>
+<input id="access_token" type="text" value="3031bf70-49be-11e7-b518-47e53b6eb418"/>
 
-<button id="join" onclick="joinChannel()">Join</button>
-<button id="leave" onclick="leaveChannel()">Leave</button>
+<button id="join" onclick="joinvideo()">Join</button>
+<button id="leave" onclick="leavevideo()">Leave</button>
 
 <button id="like" onclick="Like()">Like</button>
 <button id="unlike" onclick="Unlike()">Unlike</button>
@@ -73,15 +73,15 @@
 <div>
     <ul>
         <li>
-            <span>channel_id</span>
-            56f3d22f58f151bb17862b85
+            <span>video_id</span>
+            59350451ca892d24dcbaa2ac
             <span>memmber_id</span>
-            57a442ce0c7c0bd505d83e18
+            5935041dca892d24dcbaa2aa
             <span>access_token</span>
-            3z8iuO1rEhZVz6e8VojxiGm4iEkBoeDpaKrJdy5y5qIzUcI5m2fZWBmgDgj90Djr
+            3031bf70-49be-11e7-b518-47e53b6eb418
         </li>
         <!--<li>-->
-        <!--<span>channel_id</span>-->
+        <!--<span>video_id</span>-->
         <!--56f3d22f58f151bb17862b85-->
         <!--<span>memmber_id</span>-->
         <!--5718381b853a9c606297dca9-->
@@ -93,9 +93,9 @@
 </div>
 
 <script>
-    var socket = io.connect('http://192.168.1.139:5555', {'sync disconnect on unload': true});
+    var socket = io.connect('http://'+document.location.hostname+':5555', {'sync disconnect on unload': true});
 
-    var channel = $('#channel').val();
+    var video = $('#video').val();
     var population = 0;
     socket.on('joined', function (data) {
         population = 0;
@@ -104,8 +104,14 @@
         if (data.history) {
             $('#listMessage').empty();
             $.each(data.history, function (index, history) {
-
+              if(data.message[0]=='#'){
+                var str = data.message.split("#");
+                console.log(str);
+                $('#listMessage').append('<li  id="member_' + data.id + '"><img width="100" height="100" src="' + data.user.profile_pic + '" /> :<img width="100" height="100" src="' + str[1] + '" /></li>');
+              }
+              else{
                 $('#listMessage').append('<li  id="member_' + data.id + '"><img width="100" height="100" src="' + data.user.profile_pic + '" /> :' + data.message + '</li>');
+              }
             });
         }
         var member = $('#member_id').val();
@@ -115,9 +121,9 @@
             $('#listMember').append('<li  id="member_' + data.id + '"><img width="50" height="50" src="' + data.profile_pic + '" /> :' + data.displayName + ' ' + data.socket_id + '</li>')
 
         }
-        channel = $('#channel').val();
+        video = $('#video').val();
 
-        $('#atChannel').html(channel);
+        $('#atvideo').html(video);
 
     });
 
@@ -168,18 +174,18 @@
 
 //
 //        $('#population').html(population);
-//        $('#atChannel').html(data.channel);
+//        $('#atvideo').html(data.video);
 
 
     });
 
-    function joinChannel() {
-        var channel = $('#channel').val();
+    function joinvideo() {
+        var video = $('#video_id').val();
         var member_id = $('#member_id').val().trim();
         var access_token = $('#access_token').val().trim();
 
-        if (channel == '') {
-            $('#channel').focus();
+        if (video == '') {
+            $('#video_id').focus();
             return;
         }
 
@@ -188,12 +194,12 @@
         }
 
 
-        socket.emit('join', {channel: channel, memberId: member_id, accessToken: access_token}, function (data) {
+        socket.emit('join', {video: video, memberId: member_id, accessToken: access_token}, function (data) {
 
 
             $.each(data, function (index, value) {
 
-                if (value.channelId === channel) {
+                if (value.videoId === video) {
                     $('#atProgram').html(JSON.stringify(value));
                 }
 
@@ -207,13 +213,13 @@
     }
 
 
-    function leaveChannel() {
+    function leavevideo() {
 
         var population = $('#population').html();
-        var channel = $('#channel').val();
+        var video = $('#video').val();
         $('#listMember').empty();
         $('#population').html('');
-        $('#atChannel').html('');
+        $('#atvideo').html('');
         $('#atProgram').html('');
         socket.emit('leave');
     }
@@ -264,7 +270,17 @@
         console.log(data);
 
 
-        $('#listMessage').append('<li tabindex="1"><img width="100" height="100" src="' + data.profile_pic + '" /> :' + data.message + '</li>');
+        if(data.message[0]=='#'){
+          var str = data.message.split("#");
+          console.log(str);
+          //$('#listMessage').append('<li  id="member_' + data.id + '"><img width="100" height="100" src="' + data.profile_picc + '" /> :<img width="100" height="100" src="' + str[1] + '" /></li>');
+          $('#listMessage').append('<li tabindex="1"><img width="100" height="100" src="' + data.profile_pic + '" />:<img width="100" height="100" src="' + str[1] + '" /></li>');
+        }
+        else{
+          $('#listMessage').append('<li tabindex="1"><img width="100" height="100" src="' + data.profile_pic + '" /> :' + data.message + '</li>');
+        }
+
+        //$('#listMessage').append('<li tabindex="1"><img width="100" height="100" src="' + data.profile_pic + '" /> :' + data.message + '</li>');
 
         $('#listMessage li').last().addClass('active-li').focus();
         $('#listMessage li').removeAttr('tabindex');
@@ -276,8 +292,8 @@
         $('#atProgram').html(JSON.stringify(data));
     });
 
-    socket.on('update.channel', function (data) {
-        console.log('update.channel');
+    socket.on('update.video', function (data) {
+        console.log('update.video');
         console.log(data);
     });
 
