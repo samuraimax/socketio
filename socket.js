@@ -14,7 +14,7 @@ module.exports = function (server, localhost) {
     var io = socketio(server);
     var BASE_URL = 'http://192.168.120.204:3344';
     if (process.env.NODE_ENV !== 'dev') {
-        BASE_URL = 'https://api.vingtv.com';
+        BASE_URL = 'http://127.0.0.1:3345';
     }
     var kue = require('kue');
     var jobs = kue.createQueue({
@@ -32,7 +32,7 @@ module.exports = function (server, localhost) {
 
 
     var postUser = function (callback) {
-        request.post({url: BASE_URL + '/user/login', form: {username: 'socket@ving.co.th', password: 'Ltl5MvYYpMmzdOvbtSO5xA=='}},
+        request.post({url: BASE_URL + '/user/login', form: {username: 'socket@ving.co.th', password: 'Ltl5MvYYpMmzdOvbtSO5xA==',deviceToken:'socket',platform:'service',keyPush:'socket'}},
             function (error, response, body) {
                 if (response && response.statusCode == 200) {
 
