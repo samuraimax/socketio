@@ -32,7 +32,7 @@ module.exports = function (server, localhost) {
 
 
     var postUser = function (callback) {
-        request.post({url: BASE_URL + '/user/login', form: {username: 'socket@ving.co.th', password: 'Ltl5MvYYpMmzdOvbtSO5xA==',deviceToken:'socket',platform:'service',keyPush:'socket'}},
+        request.post({url: BASE_URL + '/user/login', form: {username: 'socket@ving.co.th', password: 'Ltl5MvYYpMmzdOvbtSO5xA==',deviceToken:'socket',platform:'web',keyPush:'socket'}},
             function (error, response, body) {
                 if (response && response.statusCode == 200) {
 
