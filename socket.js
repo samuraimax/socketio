@@ -14,7 +14,7 @@ module.exports = function (server, localhost) {
     var io = socketio(server);
     var BASE_URL = 'http://192.168.120.204:3344';
     if (process.env.NODE_ENV !== 'dev') {
-        BASE_URL = 'http://127.0.0.1:3345';
+        BASE_URL = 'https://127.0.0.1:3344';
     }
     var kue = require('kue');
     var jobs = kue.createQueue({
@@ -60,6 +60,7 @@ module.exports = function (server, localhost) {
             'Authorization': `Bearer ${accessToken}`
           }},
             function (error, response, body) {
+              try {
                 if (response && response.statusCode == 200) {
                     var member = JSON.parse(body);
 
@@ -69,10 +70,13 @@ module.exports = function (server, localhost) {
                     return callback(null, member);
                 } else {
 
-                    console.log('error: ' + response.statusCode + 'cannot get member');
+                    console.log('error: ' + response + 'cannot get member');
 
                     return callback(response, body);
                 }
+              } catch (e) {
+                socket.disconnect('cannot get member');
+              }
             });
     };
 
