@@ -285,6 +285,7 @@ module.exports = function (server, localhost) {
 
         socket.on('send.message', function (data) {
 
+          try {
             var new_member = {
                 id: socket.memberId,
                 displayName: socket.member.displayName,
@@ -292,6 +293,9 @@ module.exports = function (server, localhost) {
             };
 
             create(data.message, socket.video, new_member);
+          } catch (e) {
+            console.log("Error socket send.message ::: " ,e);
+          }
 
         });
 
