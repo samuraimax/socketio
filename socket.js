@@ -14,7 +14,7 @@ module.exports = function (server, localhost) {
     var io = socketio(server);
     var BASE_URL = 'http://192.168.120.204:3344';
     if (process.env.NODE_ENV !== 'dev') {
-        BASE_URL = 'https://sandbox-s9.hyp.live/';
+        BASE_URL = 'https://sandbox-s9.hyp.live';
     }
     var kue = require('kue');
     var jobs = kue.createQueue({
