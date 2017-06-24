@@ -75,7 +75,7 @@ module.exports = function (server, localhost) {
                     return callback(response, body);
                 }
               } catch (e) {
-                socket.disconnect('cannot get member');
+                return callback(response, body);
               }
             });
     };
