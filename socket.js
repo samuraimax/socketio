@@ -96,7 +96,7 @@ module.exports = function (server, localhost) {
 
 
             getMember(socket.memberId, socket.accessToken, function (err, result) {
-
+              try {
                 if (err) {
                     console.log(err.body);
                     io.sockets.connected[socket.id] = socket;
@@ -104,15 +104,15 @@ module.exports = function (server, localhost) {
                     socket.disconnect('unauthorized');
                     return false;
                 }
-                try {
-                    if (JSON.parse(result).error) {
-                        cb(err.body);
-                        socket.disconnect('unauthorized');
-                        return false;
-                    }
-                } catch (e) {
-
+                if (JSON.parse(result).error) {
+                    cb(err.body);
+                    socket.disconnect('unauthorized');
+                    return false;
                 }
+              } catch (e) {
+                socket.disconnect('unauthorized');
+                return false;
+              }
 
                 member = result;
                 socket.member = member;
