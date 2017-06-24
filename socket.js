@@ -100,7 +100,8 @@ module.exports = function (server, localhost) {
                 if (err) {
                     console.log(err.body);
                     io.sockets.connected[socket.id] = socket;
-                    cb(JSON.parse(err.body));
+                    //cb(JSON.parse(err.body));
+                    cb('unauthorized');
                     socket.disconnect('unauthorized');
                     return false;
                 }
