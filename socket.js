@@ -326,6 +326,11 @@ module.exports = function(server, localhost) {
       created_at: created_at
     });
 
+    setTimeout(function() {
+      console.log('receive.message::::::  Done');
+      done();
+    }, 800);
+
     job.on('complete', function() {
       var d = new Date();
       var created_at = Math.floor(d.getTime() / 1000);
