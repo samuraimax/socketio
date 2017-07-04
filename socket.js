@@ -337,7 +337,7 @@ module.exports = function (server, localhost) {
     });
 
     function create(message, video, member) {
-
+        console.log("create::::::::::::::::::",message, video, member);
         var job = jobs.create('message', {
             title: message,
             message: message,
@@ -357,6 +357,7 @@ module.exports = function (server, localhost) {
                     console.log(err);
                     return err;
                 }
+                console.log('create :: clientRedis ::::::::::::::',result);
             });
 
         });
