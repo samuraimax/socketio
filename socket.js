@@ -94,7 +94,7 @@ module.exports = function (server, localhost) {
 
             socket.join(socket.video);
 
-
+            console.log('join::::::',data);
             getMember(socket.memberId, socket.accessToken, function (err, result) {
 
                 if (err) {
@@ -285,7 +285,7 @@ module.exports = function (server, localhost) {
 
 
         socket.on('send.message', function (data) {
-
+          console.log('send.message::::::',data);
           try {
             var new_member = {
                 id: socket.memberId,

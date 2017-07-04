@@ -93,7 +93,7 @@
 </div>
 
 <script>
-    var socket = io.connect('https://'+document.location.hostname+'', {'sync disconnect on unload': true});
+    var socket = io.connect(document.location.protocol+'://'+document.location.hostname+'', {'sync disconnect on unload': true});
 
     var video = $('#video').val();
     var population = 0;
