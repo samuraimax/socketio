@@ -378,10 +378,10 @@ module.exports = function (server, localhost) {
             message: message,
             created_at: created_at
         });
-        
+
         jobs.on('failed', function(errorMessage){
           console.log('Job failed',errorMessage);
-        }
+        });
 
         setTimeout(function () {
             done();
