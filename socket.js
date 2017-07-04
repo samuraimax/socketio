@@ -263,7 +263,7 @@ module.exports = function(server, localhost) {
     });
 
     socket.on('send.message', function(data) {
-      console.log('send.message::::::', data);
+      console.log('send.message::::::', data,"socket.member :::::: ",socket.member);
       try {
         var new_member = {
           id: socket.memberId,
