@@ -345,6 +345,21 @@ module.exports = function (server, localhost) {
             member: member
         }).priority('high')
             .removeOnComplete(true).save();
+
+            io.to(video).emit('receive.message', {
+                user_id: member.id,
+                displayName: member.displayName,
+                profile_pic: member.profile_pic,
+                message: message,
+                created_at: created_at
+            });
+
+            setTimeout(function () {
+              console.log('receive.message::::::  Done');
+                done();
+            }, 800);
+
+            
         job.on('complete', function () {
             var d = new Date();
             var created_at = Math.floor(d.getTime() / 1000);
@@ -365,31 +380,30 @@ module.exports = function (server, localhost) {
     }
 
 
-    jobs.process('message', 1, function (job, done) {
-        var message = job.data.message;
-        var video = job.data.video;
-        var member = job.data.member;
-        var d = new Date();
-        var created_at = Math.floor(d.getTime() / 1000);
-        console.log('receive.message::::::',job);
-        io.to(video).emit('receive.message', {
-            user_id: member.id,
-            displayName: member.displayName,
-            profile_pic: member.profile_pic,
-            message: message,
-            created_at: created_at
-        });
+    // jobs.process('message', 1, function (job, done) {
+    //     var message = job.data.message;
+    //     var video = job.data.video;
+    //     var member = job.data.member;
+    //     var d = new Date();
+    //     var created_at = Math.floor(d.getTime() / 1000);
+    //     console.log('receive.message::::::',job);
+    //     io.to(video).emit('receive.message', {
+    //         user_id: member.id,
+    //         displayName: member.displayName,
+    //         profile_pic: member.profile_pic,
+    //         message: message,
+    //         created_at: created_at
+    //     });
+    //
+    //     setTimeout(function () {
+    //       console.log('receive.message::::::  Done');
+    //         done();
+    //     }, 800);
+    // });
 
-        jobs.on('failed', function(errorMessage){
-          console.log('Job failed',errorMessage);
-        });
-
-        setTimeout(function () {
-          console.log('receive.message::::::  Done');
-            done();
-        }, 800);
+    jobs.on('failed', function(errorMessage){
+      console.log('Job failed',errorMessage);
     });
-
 
 
     //kue.app.listen(6666);
