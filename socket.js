@@ -364,6 +364,7 @@ module.exports = function (server, localhost) {
 
     }
 
+
     jobs.process('message', 1, function (job, done) {
         var message = job.data.message;
         var video = job.data.video;
@@ -377,6 +378,10 @@ module.exports = function (server, localhost) {
             message: message,
             created_at: created_at
         });
+        
+        jobs.on('failed', function(errorMessage){
+          console.log('Job failed',errorMessage);
+        }
 
         setTimeout(function () {
             done();
