@@ -371,6 +371,7 @@ module.exports = function (server, localhost) {
         var member = job.data.member;
         var d = new Date();
         var created_at = Math.floor(d.getTime() / 1000);
+        console.log('receive.message::::::',job);
         io.to(video).emit('receive.message', {
             user_id: member.id,
             displayName: member.displayName,
@@ -384,127 +385,11 @@ module.exports = function (server, localhost) {
         });
 
         setTimeout(function () {
+          console.log('receive.message::::::  Done');
             done();
         }, 800);
     });
 
-    jobs.process('like', 1, function (job, done) {
-
-        postLikeProgram(job.data.programId, job.data.memberId, job.data.accessToken, function (err, result) {
-
-            if (err) {
-                return false;
-            }
-            var like_data = {};
-            try {
-                like_data = JSON.parse(result);
-
-            } catch (e) {
-                console.log(e); //error in the above string(in this case,yes)!
-
-            }
-
-            if (like_data.error) {
-                console.log(job.data.memberId);
-                console.log(like_data.error);
-            } else {
-
-                clientRedis.incr('video:' + job.data.videoId + ':' + job.data.programId + ':like', function (err, total) {
-                    //console.log(total);
-                    io.to(job.data.videoId).emit('update.like', {like: total, memberId: job.data.memberId});
-                });
-            }
-
-
-        });
-        done();
-    });
-
-
-    jobs.process('unlike', 1, function (job, done) {
-
-        postUnLikeProgram(job.data.programId, job.data.memberId, job.data.accessToken, function (err, result) {
-
-            if (err) {
-                return false;
-            }
-            if (result.status == 'success') {
-
-                clientRedis.decr('video:' + job.data.videoId + ':' + job.data.programId + ':like', function (err, total) {
-                    io.to(job.data.videoId).emit('update.like', {like: total, memberId: job.data.memberId});
-                });
-
-            }
-
-
-        });
-        done();
-    });
-
-
-    jobs.process('follow', 1, function (job, done) {
-
-        postFollowProgram(job.data.programId, job.data.memberId, job.data.accessToken, function (err, result) {
-
-            if (err) {
-                return false;
-            }
-            var follow_data = {};
-            try {
-                follow_data = JSON.parse(result);
-
-            } catch (e) {
-                console.log(e); //error in the above string(in this case,yes)!
-
-            }
-
-            if (follow_data.error) {
-                console.log(job.data.memberId);
-                console.log(follow_data.error);
-            } else {
-
-                clientRedis.incr('video:' + job.data.videoId + ':' + job.data.programId + ':follow', function (err, total) {
-                    //console.log(total);
-                    io.to(job.data.videoId).emit('update.follow', {follow: total, memberId: job.data.memberId});
-                });
-            }
-
-
-        });
-        done();
-    });
-
-    jobs.process('unfollow', 1, function (job, done) {
-
-        postUnFollowProgram(job.data.programId, job.data.memberId, job.data.accessToken, function (err, result) {
-
-            if (err) {
-                return false;
-            }
-            var follow_data = {};
-            try {
-                follow_data = JSON.parse(result);
-
-            } catch (e) {
-                console.log(e); //error in the above string(in this case,yes)!
-
-            }
-
-            if (follow_data.error) {
-                console.log(job.data.memberId);
-                console.log(follow_data.error);
-            } else {
-
-                clientRedis.decr('video:' + job.data.videoId + ':' + job.data.programId + ':follow', function (err, total) {
-                    //console.log(total);
-                    io.to(job.data.videoId).emit('update.follow', {follow: total, memberId: job.data.memberId});
-                });
-            }
-
-
-        });
-        done();
-    });
 
 
     //kue.app.listen(6666);
