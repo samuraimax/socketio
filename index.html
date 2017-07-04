@@ -58,9 +58,9 @@
 <span>Program:</span>
 <input id="program" type="text" value=""/>
 <span>MemberID:</span>
-<input id="member_id" type="text" value="5935041dca892d24dcbaa2aa"/>
+<input id="member_id" type="text" value="593e60638879fb77484bf985"/>
 <span>AccessToken</span>
-<input id="access_token" type="text" value="3031bf70-49be-11e7-b518-47e53b6eb418"/>
+<input id="access_token" type="text" value="ebb17e40-4f52-11e7-9104-8513f4a9bb27"/>
 
 <button id="join" onclick="joinvideo()">Join</button>
 <button id="leave" onclick="leavevideo()">Leave</button>
@@ -76,9 +76,9 @@
             <span>video_id</span>
             59350451ca892d24dcbaa2ac
             <span>memmber_id</span>
-            5935041dca892d24dcbaa2aa
+            593e60638879fb77484bf985
             <span>access_token</span>
-            3031bf70-49be-11e7-b518-47e53b6eb418
+            ebb17e40-4f52-11e7-9104-8513f4a9bb27
         </li>
         <!--<li>-->
         <!--<span>video_id</span>-->
@@ -93,7 +93,7 @@
 </div>
 
 <script>
-    var socket = io.connect('http://'+document.location.hostname+':5555', {'sync disconnect on unload': true});
+    var socket = io.connect('https://'+document.location.hostname+'', {'sync disconnect on unload': true});
 
     var video = $('#video').val();
     var population = 0;

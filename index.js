@@ -35,7 +35,7 @@ app.use(bodyParser.json());
 //app.use(cookieParser);
 app.use(morgan('dev'));
 
-var port = process.env.PORT || 5555;
+var port = process.env.PORT || 3355;
 
 var router = express.Router();
 
